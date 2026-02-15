@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hunter Fight Predictor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #38bdf8;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .fighter {
+      flex: 1;
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      background: #38bdf8;
+      border: none;
+      padding: 10px;
+      font-weight: bold;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background: #0ea5e9;
+    }
+
+    .result {
+      margin-top: 30px;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .winner {
+      font-size: 22px;
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    pre {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 6px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Hunter Association - Fight Predictor</h1>
+
+<div class="container">
+  <div class="fighter" id="fighterA">
+    <h2>Fighter A</h2>
+    <input placeholder="Name" id="A_name">
+    <select id="A_nen">
+      <option>Enhancer</option>
+      <option>Transmuter</option>
+      <option>Conjurer</option>
+      <option>Specialist</option>
+      <option>Manipulator</option>
+      <option>Emitter</option>
+    </select>
+
+    <input type="number" placeholder="Strength" id="A_strength">
+    <input type="number" placeholder="Speed" id="A_speed">
+    <input type="number" placeholder="Durability" id="A_durability">
+    <input type="number" placeholder="Intelligence" id="A_intelligence">
+    <input type="number" placeholder="Aura Capacity" id="A_auraCapacity">
+    <input type="number" placeholder="Aura Control" id="A_auraControl">
+    <input type="number" placeholder="Experience" id="A_experience">
+  </div>
+
+  <div class="fighter" id="fighterB">
+    <h2>Fighter B</h2>
+    <input placeholder="Name" id="B_name">
+    <select id="B_nen">
+      <option>Enhancer</option>
+      <option>Transmuter</option>
+      <option>Conjurer</option>
+      <option>Specialist</option>
+      <option>Manipulator</option>
+      <option>Emitter</option>
+    </select>
+
+    <input type="number" placeholder="Strength" id="B_strength">
+    <input type="number" placeholder="Speed" id="B_speed">
+    <input type="number" placeholder="Durability" id="B_durability">
+    <input type="number" placeholder="Intelligence" id="B_intelligence">
+    <input type="number" placeholder="Aura Capacity" id="B_auraCapacity">
+    <input type="number" placeholder="Aura Control" id="B_auraControl">
+    <input type="number" placeholder="Experience" id="B_experience">
+  </div>
+</div>
+
+<button onclick="simulate()">Simulate Fight</button>
+
+<div class="result" id="result" style="display:none;">
+  <div class="winner" id="winner"></div>
+  <p id="scores"></p>
+
+  <h3>Fighter A Breakdown</h3>
+  <pre id="A_breakdown"></pre>
+
+  <h3>Fighter B Breakdown</h3>
+  <pre id="B_breakdown"></pre>
+</div>
+
+<script>
+  function getFighter(prefix) {
+    return {
+      id: prefix === "A" ? 1 : 2,
+      name: document.getElementById(prefix + "_name").value,
+      nenType: document.getElementById(prefix + "_nen").value,
+      baseStats: {
+        strength: Number(document.getElementById(prefix + "_strength").value),
+        speed: Number(document.getElementById(prefix + "_speed").value),
+        durability: Number(document.getElementById(prefix + "_durability").value),
+        intelligence: Number(document.getElementById(prefix + "_intelligence").value),
+        auraCapacity: Number(document.getElementById(prefix + "_auraCapacity").value),
+        auraControl: Number(document.getElementById(prefix + "_auraControl").value),
+        experience: Number(document.getElementById(prefix + "_experience").value),
+      }
+    };
+  }
+
+  async function simulate() {
+    const fighterA = getFighter("A");
+    const fighterB = getFighter("B");
+
+    const response = await fetch("http://localhost:3000/simulate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fighterA, fighterB })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("result").style.display = "block";
+    document.getElementById("winner").innerText = "Winner: " + data.winner;
+    document.getElementById("scores").innerText =
+      fighterA.name + " Score: " + data.fighterA.finalScore.toFixed(4) +
+      " | " +
+      fighterB.name + " Score: " + data.fighterB.finalScore.toFixed(4);
+
+    document.getElementById("A_breakdown").innerText =
+      data.fighterA.explanation.join("\n");
+
+    document.getElementById("B_breakdown").innerText =
+      data.fighterB.explanation.join("\n");
+  }
+</script>
+
+</body>
+</html>
